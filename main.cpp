@@ -4,14 +4,13 @@
 #include <string.h>
 # include <fstream>
 #include <map>
-
+#include <cctype>
  using namespace std;
 
  string lexsem=("");
  int col=1, row=1;
- char c;
+ char c = 0;
  int old_col=1, old_row=row;
- int spec;
  ifstream fin("input.txt");
  ofstream fout("output.txt");
 
@@ -67,109 +66,83 @@ ident_type["or"] = OP;
 ident_type["xor"] = OP;
 	}
  void next_simvol(){	
+		if (c)
+			lexsem += c;	
+		col++;	
 		if (c=='\n') { old_col = 1; col=1; row++; }
 		fin>>c;	
-			if  (c==' ' ) {
-			col++;
-		  c=NULL; 
-		}	
-			if (fin.eof()) {
-				c = '%';}
+		if (fin.eof()) {
+			c = '%';}
  }
- 
-Token *get_token(){	
-		
-			if (fin.eof()){
-				return 0;}
-				
-				string type;					
-				if (spec!=1) {
-					next_simvol();
-					col++;
-				}
-				else if (spec=1) {spec=0;}
+ char ops_second_char[] = {'/','+','*',' :','-','>', '^', '@', '='};
+ char sep[] = {';' ,',','(','[',')',']','.'};
+ char ops[] = {'>','<','/','+','*',':','-','^','=','@',';',',','(','[',')',']','.'};
+ bool in_mas(char s, char *mas, int len){
+	 for(int i = 0; i < len; i++){
+		if (s == mas[i]) return true;
+	 }
+	 return false;
+ }
 
-		 if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='_' && c<='_')) {
-			 type = "ident";		
-			lexsem += c;
+
+Token *get_token(){		
+		string type;	
+		if (c == ' ') {next_simvol(); old_col = col; return 0;}
+		else	if (isalpha(c) || c == '_') {
+			type = "ident";		
 			next_simvol();
-			col++;	
-		
-			while((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0') && (c<='9') || ((c>='-') && (c<='-')) || ((c>='_') && (c<='_'))   ){
-				lexsem += c;
+			while(isalpha(c) || isdigit(c) || c == '_'){	
 				next_simvol();	
-				col++;			
 			}
-			spec=1;
 		 }
 		 	
 		 else	
-		if (c>='0' && c<='9'){
+		if (isdigit(c)){
 			type = "integer";
-			lexsem += c;
 			next_simvol();
-			col++;
-		while((c>='0') && (c<='9') || (c>='.') && (c<='.')){
-			lexsem += c;	
+			while(isdigit(c) || c == '.'){
 				next_simvol();
-				if ((c>='.') && (c<='.')) {
-				type="real"; }				
-				col++;	
-		}	
-			spec=1;
+				if (c == '.') {
+					type="real"; 
+				}				
+			}	
 		}
 		else
-		if ((c=='>') || (c=='<') || (c=='/') || (c=='+')|| (c=='*') || (c=='/') || (c==':')  || (c=='-') || (c=='^') || (c=='=') || (c=='@' ) ||  (c==';') || (c==',')  ||( c=='(')   || (c=='[')  || (c==')')   || (c==']')   || (c=='.')  ) {
+		if (in_mas(c, ops, sizeof(ops)/sizeof(ops[0]))){
+			if (c == ':') {  next_simvol();  if (c == '=') {type="op"; next_simvol();}
+			else type="sep";} else
+			if (c == '<') { type="op";  next_simvol(); if (c == '>' || c == '=') {next_simvol();}}
+			else if (in_mas(c, ops_second_char, sizeof(ops_second_char)/sizeof(ops_second_char[0]))){	
 				type="op";
-				lexsem += c;
-				if (c=='<') {
-				next_simvol();
-				col++;
-				if ((c=='>') || (c=='=')) { lexsem+=c; spec=0;} 
-				else {spec=1;}
-				}
-				else if (c==':') { next_simvol();
-				col++;	
-				if (c=='=') { 	lexsem += c;}
-				else 	{type="sep"; spec=1;}}
-				else	if ((c!='^') &&  (c!='@' ) &&  (c!=';' ) && (c!=',')  && ( c!='(' )   && (c!='[' )  && (c!=')') && (c!=']') && (c!='.')){	
-			next_simvol();
-				col++;	
-			spec=1;
-			if (c=='=')  {lexsem+=c; spec=0;}
-			else if (c=='/') {
-				while(old_row==row){
-				lexsem+=c; 
-				next_simvol();
-				col++;
-				}
-				return 0;
-			}
-			else if (c=='*') {
-				lexsem+=c; 
-				next_simvol();
-				while(1){
-				lexsem+=c; 
-					if (c=='*') { 
+			    next_simvol();
+					if (c=='=')  {next_simvol();}
+					else if (c=='/') {
+						while(old_row==row){
+						next_simvol();
+						}
+					return 0;
+					}
+					else if (c=='*') {
 					next_simvol();
-					col++;
-					if (c=='/') {	lexsem+=c; col++;spec=0; return 0;}}
-					next_simvol();	
+						while(1){
+							if (c == '*') { 
+								next_simvol();
+							if (c == '/') {	next_simvol(); return 0;}}
+						next_simvol();	
+						}
+					}
 				}
-			}
-			else {spec=1;}			
-				}
-				else 	if (  (c==';' ) || (c==',')  || ( c=='(')   || (c=='[')  || (c==')')  || (c==']') || (c=='.')) { type = "sep"; }
+				else 	if (in_mas(c, sep, sizeof(sep)/sizeof(sep[0])))  {  next_simvol(); type = "sep"; }
 		}	
-		if (c=='{') { 
+		else if (c == '{') { 
 			while(c!='}'){
-			lexsem += c;
 			next_simvol();
-			col++;
 			}
-			lexsem += c;
+			old_col = col;
+			next_simvol();
 			return 0;
 		}
+		else {next_simvol(); return 0;}
 			if (type=="ident" && ident_type[lexsem] == KEYWORDS)
 				{ type="keybord"; }
 			if (type=="ident" && ident_type[lexsem]== OP)
@@ -183,14 +156,11 @@ int main()
 	initmap();
 	fin >> noskipws;	
 	next_simvol();
-	col++;
-	spec=1;
-	if (fin.eof())  {return 0;}
 	while(1){		
 		if (fin.eof())  {return 0;}			
 		get_token();	
-		lexsem=("");
+		lexsem="";
 	}	
 	fin.close();	
-		fout.close();	
+	fout.close();	
 }
