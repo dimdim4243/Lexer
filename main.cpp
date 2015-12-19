@@ -184,11 +184,19 @@ Token *get_token(){
 		else
 		if (isdigit(c)){
 			type=tips="integer";
+			char g=c;
 			next_simvol();
+			if ( (isdigit(g) && c == 'e') || (isdigit(g) &&  c == 'E')){
+				next_simvol(); next_simvol(); type="real";
+			}
 			while(isdigit(c) || c == '.'){
 				if (c == '.') {
 					type="real"; 
 					next_simvol();
+					if (c == 'e' || c == 'E') { 
+					eror="NoFract";	
+				throw new Errors(row, col, eror);
+					}
 					if (c == '%') {
 							eror="NoFract";	
 				throw new Errors(row, col, eror);
@@ -203,12 +211,12 @@ Token *get_token(){
 				s= lexsem.substr(0, lexsem.size()-1); 
 				cout<<s;
 				a = atoi(s.c_str());
-				ValToken<int> *tokenVal= new ValToken <int>(row, old_col, "int", s, a); old_col=col;
+				ValToken<int> *tokenVal= new ValToken <int>(row, old_col, "integer", s, a); old_col=col;
 				tips=type;
 				lexsem='.';
 				next_simvol();
 				type="sep";
-				Token *q = new Token(row, old_col, type, lexsem);
+				Token *q = new Token(row, old_col-1, type, lexsem);
 				tips=type;
 				tokenbuf=q;
 				old_col=col;
@@ -217,12 +225,17 @@ Token *get_token(){
 		
 
 				}
-				next_simvol();			
-				if (c == 'e' || c == 'E') {next_simvol();	
+				
+next_simvol();	
+				if (c == '.') {	type="real"; 	}
+				if (c == 'e' || c == 'E') {
+					next_simvol();  
+				if ( c == '.') {eror="NoExp";	
+				throw new Errors(row, col, eror);}
 				if (c == '+' || c == '-') {next_simvol(); 
-				if ((c<'1' && c>'9') || c == '%') eror="NoExp";	
+				if ((c>'9') || c == '%') {eror="NoExp";	
 
-				throw new Errors(row, col, eror);
+				throw new Errors(row, col, eror);}
 				}				else if ((c<'1' && c>'9') || c == '%') {eror="NoExp";	
 
 				throw new Errors(row, col, eror);}
@@ -277,6 +290,10 @@ Token *get_token(){
 			else if (c == '{') { 
 			while(c!='}'){
 			next_simvol();
+			if (c == '%') {
+			 eror="BadEOF";	
+				throw new Errors(row, col-1, eror);
+							}
 			probel_sim();
 			}
 			old_col = col;
@@ -297,12 +314,22 @@ Token *get_token(){
 			if (c =='\'') {next_simvol();
 			type = "string";
 			while(c != '\'') {
+				
+				if (c == '\n') {
+					eror="BadNL";	
+				throw new Errors(row, col, eror);
+				}
+				if (c == '%') {
+					eror="BadEOF";	
+				throw new Errors(row, col, eror);
+				}
 				next_simvol();
-			
 			}	
 				next_simvol();
-			if (lexsem == "''" && c == '\'') {next_simvol(); next_simvol();  next_simvol();  type="char";
+			
+			if (lexsem == "''" && c == '\'') {next_simvol(); next_simvol();   type="char";
 			ValToken<char> *tokenVal = new ValToken<char>(row, old_col, "char", lexsem, '\''); 
+			tips=type;
 			return tokenVal; }
 			}
 			else if (c == '`') { next_simvol; eror="BadChar";	
@@ -353,20 +380,35 @@ Token *get_token(){
 						eror="NoCC";	
 				throw new Errors(row, col, eror);
 				}
+				if  (lexsem[0] == '#' && isalpha(lexsem[1]))
+				{	eror="NoCC";	
+					throw new Errors(row,col-2, eror);
+				}
 				if (lexsem[0] == '#' && lexsem[1] == '$'){
 				s = lexsem.substr(2); 
 				a = strtol (s.c_str(), NULL, 16); }
 				else {
 				s = lexsem.substr(1); 
 				a = atoi(s.c_str()); }
+				if ( a>127) {
+						eror="BadCC";	
+				throw new Errors(row, col, eror);
+				}
+
+
+
+
+
+
 				d = (char)a; 
 				if (d!=0 && d<127){
 				ValToken<char> *tokenVal = new ValToken<char>(row, old_col, "char", lexsem, d); 
+				 old_col=col;
 				tips=type;
 				return tokenVal; }
 				else { 	eror="BadCC";	
 
-				throw new Errors(row, col, eror);}
+				throw new Errors(row, col-1, eror);}
 				} 
 		if (type=="ident" && ident_type[lexsem] == KEYWORDS)
 				{ type="keyword"; }
