@@ -173,7 +173,7 @@ Token *get_token(){
 			{next_simvol();
 			}
 			if  (lexsem == "$" ) {
-				if (c == '%') {old_col=1;}
+				if (c == '%') {old_col=2;}
 				if (  (c>'f' ) || (c>'F')){
 					old_col++;
 				}
@@ -235,11 +235,14 @@ Token *get_token(){
 				next_simvol();{
 				if (c=='*') {
 					next_simvol();
+					
 						while(1){
-								next_simvol();
+							next_simvol();
 							if (c == '*') { 
 								next_simvol();
 								if (c == ')') {type="coment";	next_simvol();break;}}
+							if (c == '%') { eror="BadEOF";	
+				throw new Errors(row, col, eror);    }
 						}
 				    }
 				}
@@ -274,6 +277,7 @@ Token *get_token(){
 			else if (c == '{') { 
 			while(c!='}'){
 			next_simvol();
+			probel_sim();
 			}
 			old_col = col;
 			next_simvol();
@@ -286,8 +290,8 @@ Token *get_token(){
 					while((c >= 'a' && c <= 'f' ) || (c >= 'A' && c <= 'F') || isdigit(c)){
 						next_simvol();
 					}
-				type="char";
-			}
+			
+			}	type="char";
 			}
 		
 			if (c =='\'') {next_simvol();
@@ -345,6 +349,10 @@ Token *get_token(){
 				string s; 
 				int a; 
 				char d; 
+				if (lexsem == "#") {
+						eror="NoCC";	
+				throw new Errors(row, col, eror);
+				}
 				if (lexsem[0] == '#' && lexsem[1] == '$'){
 				s = lexsem.substr(2); 
 				a = strtol (s.c_str(), NULL, 16); }
