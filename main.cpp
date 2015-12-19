@@ -140,12 +140,14 @@ Token *get_token(){
 			while ( c == '\n'){
 		next_simvol();c=0; old_col = 1; col=1; row++;}
 		type ="per";}
-		if (c == ' ' || c == '\t' ) {c=0; next_simvol();if (c == ' ' || c =='\t') 
-			while(c == ' ' || c =='\t'){
+		if ( c ==' ')   {c=0; next_simvol();old_col = col; }
+		if  (c == '\t' ) { col =(((col-1)/4+1)*4); c=0; next_simvol();	
+			while( c =='\t'){
+			col=((col/4+1)*4);
 				next_simvol();
 				lexsem="";
 			}
-	old_col = col; }
+			old_col = col; }
 		if (isalpha(c) || c == '_') {
 			type = "ident";		
 			next_simvol();
@@ -229,11 +231,12 @@ Token *get_token(){
 			else if (c == '#'){
 			next_simvol();
 			if (c == '$' || (c >= 'a' && c <= 'f' ) || (c >= 'A' && c <= 'F') || isdigit(c)){
-				if (c == '$' ) {type="char#$";} else {type="char#";}
+				
 				next_simvol();
 					while((c >= 'a' && c <= 'f' ) || (c >= 'A' && c <= 'F') || isdigit(c)){
 						next_simvol();
 					}
+				type="char";
 			}
 			}
 		
@@ -250,10 +253,10 @@ Token *get_token(){
 			}
 
 
-		else if (c == '`') { next_simvol; eror="BadNL";	
-		old_col=col;
-		Errors *t = new Errors(row, old_col, eror);
-		}
+			else if (c == '`') { next_simvol; eror="BadNL";	
+			old_col=col;
+			throw new Errors(row, old_col, eror);
+			}
 			if (type == "integer" ){ 
 				int a;
 				a = atoi(lexsem.c_str());
@@ -267,13 +270,13 @@ Token *get_token(){
 				ValToken<string> *tokenVal= new ValToken <string>(row, old_col, type, lexsem, s); old_col=col;
 				return tokenVal;
 			}
-				if (type == "real" ){ 
+			if (type == "real" ){ 
 				double a;
 				a = atof(lexsem.c_str());
 				ValToken<double> *tokenVal= new ValToken <double>(row, old_col, type, lexsem, a); old_col=col;
 				return tokenVal;
 			}
-				if (type == "hex" ){ 
+			if (type == "hex" ){ 
 				string s;
 				s=lexsem.substr (1); 
 				long long int res = std::stoll(s, 0, 16);
@@ -281,36 +284,29 @@ Token *get_token(){
 				return tokenVal;
 			}
 
-	if (type == "char#") 
-{ 
-string s; 
-int a; 
-char d; 
-s = lexsem.substr(1); 
-a = atoi(s.c_str()); 
-d = (char)a; 
-cout<<d;
-ValToken<char> *tokenVal = new ValToken<char>(row, old_col, "char", lexsem, d); 
-return tokenVal; 
-} 
-if (type == "char#$") 
-{ 
-string s; 
-int a; 
-char d; 
-s = lexsem.substr(2); 
-a = strtol (s.c_str(), NULL, 16); 
-d = (char)a; 
-ValToken<char> *tokenVal = new ValToken<char>(row, old_col, "char", lexsem, d); 
-return tokenVal; 
-}
-		     
+			if (type == "char") 
+				{ 
+				string s; 
+				int a; 
+				char d; 
+				if (lexsem[0] == '#' && lexsem[1] == '$'){
+				s = lexsem.substr(2); 
+				a = strtol (s.c_str(), NULL, 16); }
+				else {
+				s = lexsem.substr(1); 
+				a = atoi(s.c_str()); }
+				d = (char)a; 
+				cout<<d;
+				ValToken<char> *tokenVal = new ValToken<char>(row, old_col, "char", lexsem, d); 
+				return tokenVal; 
+				} 
+		
 
 
 
-			if (type=="ident" && ident_type[lexsem] == KEYWORDS)
+		if (type=="ident" && ident_type[lexsem] == KEYWORDS)
 				{ type="keyword"; }
-			if (type=="ident" && ident_type[lexsem]== OP)
+		if (type=="ident" && ident_type[lexsem]== OP)
 				{ type="op";}
 
 
@@ -337,7 +333,7 @@ int main()
 				}
             delete cur;
         }
-    }catch ( Errors *e) { e->print();}
+    }catch ( Errors *e) { e->print(); return 0;}
 	fin.close();	
 	fout.close();	
 }
