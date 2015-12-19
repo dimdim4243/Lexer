@@ -163,7 +163,7 @@ Token *get_token(){
 			}
 			if  (lexsem == "$" ) {
 				if (c == '%') {old_col=1;}
-				if (  (c>'f' && c<='z') || ((c>'F' && c<='Z'){
+				if (  (c>'f' && c<='z') || (c>'F' && c<='Z')){
 					old_col++;
 				}
 				eror="NoHex";	
