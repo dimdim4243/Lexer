@@ -161,6 +161,9 @@ Token *get_token(){
 			while(isdigit(c) || (c>='a' && c<='f') || (c>='A' && c<='F'))
 			{next_simvol();
 			}
+			if  (c == NULL || c == '%' || (c>'f' && c<='z') || (c>'F' && c<='Z')) {
+				eror="NoHex";	
+			throw new Errors(row, old_col, eror);}
 			type="hex";
 		}
 		else
@@ -231,7 +234,6 @@ Token *get_token(){
 			else if (c == '#'){
 			next_simvol();
 			if (c == '$' || (c >= 'a' && c <= 'f' ) || (c >= 'A' && c <= 'F') || isdigit(c)){
-				
 				next_simvol();
 					while((c >= 'a' && c <= 'f' ) || (c >= 'A' && c <= 'F') || isdigit(c)){
 						next_simvol();
