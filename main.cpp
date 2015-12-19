@@ -253,7 +253,7 @@ Token *get_token(){
 			}
 
 
-			else if (c == '`') { next_simvol; eror="BadNL";	
+			else if (c == '`') { next_simvol; eror="BadChar";	
 			old_col=col;
 			throw new Errors(row, old_col, eror);
 			}
