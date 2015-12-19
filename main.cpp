@@ -141,9 +141,9 @@ Token *get_token(){
 		next_simvol();c=0; old_col = 1; col=1; row++;}
 		type ="per";}
 		if ( c ==' ')   {c=0; next_simvol();old_col = col; }
-		if  (c == '\t' ) { col =(((col-1)/4+1)*4); c=0; next_simvol();	
-			while( c =='\t'){
-			col=((col/4+1)*4);
+		if  (c == '\t'  || c == ' ') {if (c == '\t'){ col =(((col-1)/4+1)*4);} c=0; next_simvol();	
+			while( c =='\t' || c == ' '){
+			if (c == '\t'){ col =(((col-1)/4+1)*4);}
 				next_simvol();
 				lexsem="";
 			}
@@ -161,9 +161,9 @@ Token *get_token(){
 			while(isdigit(c) || (c>='a' && c<='f') || (c>='A' && c<='F'))
 			{next_simvol();
 			}
-			if  (c == NULL || c == '%' || (c>'f' && c<='z') || (c>'F' && c<='Z')) {
+			if  ((lexsem == "$" && c == '%')  || (lexsem == "$" && (c>'f' && c<='z')) || (lexsem == "$" && (c>'F' && c<='Z'))) {
 				eror="NoHex";	
-			throw new Errors(row, old_col, eror);}
+			throw new Errors(row, old_col+1, eror);}
 			type="hex";
 		}
 		else
@@ -330,7 +330,7 @@ int main()
 	 Token *cur;
 	   try {
         while (cur = get_token()) {
-				if (tips!="coment" && tips!="per"){
+				if (tips!="coment" && tips!="per" && tips!=""){
             cur->print();
 				}
             delete cur;
