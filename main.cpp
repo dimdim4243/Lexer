@@ -167,7 +167,7 @@ Token *get_token(){
 					old_col++;
 				}
 				eror="NoHex";	
-			throw new Errors(row, old_col, eror);}
+				throw new Errors(row, old_col, eror);}
 			type="hex";
 		}
 		else
@@ -267,6 +267,7 @@ Token *get_token(){
 				int a;
 				a = atoi(lexsem.c_str());
 				ValToken<int> *tokenVal= new ValToken <int>(row, old_col, type, lexsem, a); old_col=col;
+				tips=type;
 				return tokenVal;
 			}
 
@@ -274,12 +275,14 @@ Token *get_token(){
 				string s;
 				s= lexsem.substr(1, lexsem.size()-2); 
 				ValToken<string> *tokenVal= new ValToken <string>(row, old_col, type, lexsem, s); old_col=col;
+				tips=type;
 				return tokenVal;
 			}
 			if (type == "real" ){ 
 				double a;
 				a = atof(lexsem.c_str());
 				ValToken<double> *tokenVal= new ValToken <double>(row, old_col, type, lexsem, a); old_col=col;
+				tips=type;
 				return tokenVal;
 			}
 			if (type == "hex" ){ 
@@ -287,6 +290,7 @@ Token *get_token(){
 				s=lexsem.substr (1); 
 				long long int res = std::stoll(s, 0, 16);
 				ValToken<int> *tokenVal= new ValToken <int>(row, old_col, type, lexsem, res); old_col=col;
+				tips=type;
 				return tokenVal;
 			}
 
@@ -304,6 +308,7 @@ Token *get_token(){
 				d = (char)a; 
 				cout<<d;
 				ValToken<char> *tokenVal = new ValToken<char>(row, old_col, "char", lexsem, d); 
+				tips=type;
 				return tokenVal; 
 				} 
 		
