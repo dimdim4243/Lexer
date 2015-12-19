@@ -161,9 +161,13 @@ Token *get_token(){
 			while(isdigit(c) || (c>='a' && c<='f') || (c>='A' && c<='F'))
 			{next_simvol();
 			}
-			if  ((lexsem == "$" && c == '%')  || (lexsem == "$" && (c>'f' && c<='z')) || (lexsem == "$" && (c>'F' && c<='Z'))) {
+			if  (lexsem == "$" ) {
+				if (c == '%') {old_col=1;}
+				if (  (c>'f' && c<='z') || ((c>'F' && c<='Z'){
+					old_col++;
+				}
 				eror="NoHex";	
-			throw new Errors(row, old_col+1, eror);}
+			throw new Errors(row, old_col, eror);}
 			type="hex";
 		}
 		else
