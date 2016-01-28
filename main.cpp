@@ -1,5 +1,6 @@
 using namespace std;
 #include "Lexser.h"
+#include "Lexser.cpp"
 
 Token *cur;
 
@@ -21,7 +22,7 @@ public:
  Node *n;
  string b;
 
-Lexser *l = new Lexser();
+Lexser *l = new Lexser("input.txt" , "output.txt", "",  "", 0, 1, 0, 1, 1);
 void next_token(){
 	cur = l->get_token();
 }
@@ -69,7 +70,6 @@ int main()
 {   
  	setlocale(LC_ALL,"Rus");
 	initmap();
-	fin >> noskipws;
 	  /* try {
         while (cur = l->get_token()) {
 				if (tips!="coment" && tips!="per" && tips!=""){
@@ -79,9 +79,6 @@ int main()
         }
     }catch ( Errors *e) { e->print(); return 0;}
 	*/
-	
 	next_token();
-	pars_add();
-	fin.close();	
-	fout.close();	
+	pars_add();	
 }
